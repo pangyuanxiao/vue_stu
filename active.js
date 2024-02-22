@@ -43,5 +43,7 @@ effect(()=>{
 })
 
 setTimeout(() =>{
-    obj.text = "vue3"
+    // obj.text = "vue3"
+    obj.NotExist = "vue3"
+    //这样是有问题的，没有副作用函数没有和这个字段有响应式关系
 },1000)
