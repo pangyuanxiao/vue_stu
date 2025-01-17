@@ -3,3 +3,6 @@
  2、npm i -g typescript@4.7.4
 
 3、tsc -init //生成一个tsconfig文件（重命名tsconfig.json.tmp）
+
+4、eslintrc.js(格式校验)  prettierrc（代码格式化，引入这个就可以了）
+Prettier - Code formatter  v11.0.0 
