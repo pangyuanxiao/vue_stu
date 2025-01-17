@@ -1,2 +1,5 @@
 1、npm init -y //初始化
  
+ 2、npm i -g typescript@4.7.4
+
+3、tsc -init //生成一个tsconfig文件（重命名tsconfig.json.tmp）
