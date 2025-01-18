@@ -6,3 +6,6 @@
 
 4、eslintrc.js(格式校验)  prettierrc（代码格式化，引入这个就可以了）
 Prettier - Code formatter  v11.0.0 
+设置：
+（1）default formatter  ：Prettier - Code formatter
+（2）Prettier: Config Path
