@@ -9,3 +9,8 @@ Prettier - Code formatter  v11.0.0
 设置：
 （1）default formatter  ：Prettier - Code formatter
 （2）Prettier: Config Path
+
+
+5、配置rollup
+（1）npm -D 相当于 -D 是 --save-dev 的缩写，用于将包安装为开发依赖项
+npm i -D @rollup/plugin-commonjs@22.0.1 @rollup/plugin-node-resolve@13.3.0 @rollup/plugin-typescript@8.3.4
