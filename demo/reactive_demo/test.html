@@ -1,0 +1,21 @@
+<script>
+  let phone = {
+    price: 10,
+    sum: 2
+  }
+
+  let total = 0
+
+  let effect = () => {
+    total = phone.price * phone.sum //这里执行的是getter
+  }
+
+  effect()
+  console.log(`价格为${total}`)
+
+  phone.sum = 3
+  effect()
+  console.log(`价格为${total}`)
+</script>
+
+//在vue2 是object defineproperties实现响应式

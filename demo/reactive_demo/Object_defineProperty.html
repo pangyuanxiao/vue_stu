@@ -1,0 +1,35 @@
+<script>
+  //在vue2 是Object_defineProperty 实现响应式
+  //是Object.defineProperty的缺陷（不能监听新增的对象属性和数组）
+  //只能监听指定对象的属性，如果对象新增了一个属性或者为数组新增一个元素没法监听到
+  //js检测不到新增
+  let sum = 1
+  let total = 0
+  let phone = {
+    price: 10,
+    sum: sum
+  }
+
+  let effect = () => {
+    total = phone.price * phone.sum //这里执行的是getter
+  }
+
+  effect()
+  console.log(`价格为${total}`)
+
+  phone.sum = 3
+  effect()
+  console.log(`价格为${total}`)
+
+  Object.defineProperty(phone, 'sum', {
+    get() {
+      console.log(`getter`)
+      return sum
+    },
+    set(newVal) {
+      console.log(`setter`)
+      sum = newVal
+      effect()
+    }
+  })
+</script>
