@@ -1,1 +1,1 @@
-let test = '22qwqwqwqwqwq'
+export { reactive } from '@vue/reactivity'
