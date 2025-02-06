@@ -10,10 +10,11 @@
 
   <script>
     const { reactive } = Vue
-    const obj = reactive({
-      name: 'zhang'
-    })
 
-    console.log(obj)
+    const obj = reactive({ name: 'zhang' })
+
+    console.log(obj.name)
+
+    obj.name = 'lee'
   </script>
 </html>
