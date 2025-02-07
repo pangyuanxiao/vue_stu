@@ -1,9 +1,35 @@
+type KeyToDepMap = Map<any, ReactiveEffect>
+/**
+ * 收集所有依赖的 WeakMap 实例：
+ * 1. `key`：响应性对象
+ * 2. `value`：`Map` 对象
+ * 		1. `key`：响应性对象的指定属性
+ * 		2. `value`：指定对象的指定属性的 执行函数
+ */
+const targetMap = new WeakMap<any, KeyToDepMap>()
+
 export function track(target: object, key: unknown) {
-  console.log(`收集依赖`)
+  if (!activeEffect) return
+  // 尝试从 targetMap 中，根据 target 获取 map
+  let depsMap = targetMap.get(target)
+  // 如果获取到的 map 不存在，则生成新的 map 对象，并把该对象赋值给对应的 value
+  if (!depsMap) {
+    targetMap.set(target, (depsMap = new Map()))
+  }
+  depsMap.set(key, activeEffect)
 }
 
 export function trigger(target: object, key?: unknown) {
-  console.log(`触发依赖`)
+  const depsMap = targetMap.get(target)
+  if (!depsMap) {
+    return
+  }
+  const effect = depsMap.get(key) as ReactiveEffect
+  if (!effect) {
+    return
+  }
+
+  effect.fn()
 }
 
 /**
