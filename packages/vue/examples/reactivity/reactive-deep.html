@@ -8,6 +8,7 @@
   </head>
   <body>
     <div id="app1"></div>
+    <div id="app2"></div>
   </body>
 
   <script>
@@ -17,6 +18,9 @@
 
     effect(() => {
       document.querySelector('#app1').innerText = obj.name
+    })
+    effect(() => {
+      document.querySelector('#app2').innerText = obj.name
     })
 
     setTimeout(() => {
