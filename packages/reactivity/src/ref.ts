@@ -1,6 +1,7 @@
 import { toReactive } from './reactive'
 import { createDep, Dep } from './dep'
 import { activeEffect, trackEffects, triggerEffects } from './effect'
+import { hasChanged } from '@vue/shared'
 export interface Ref<T = any> {
   value: T
 }
@@ -31,10 +32,13 @@ class RefImpl<T> {
 
   // 是否为 ref 类型数据的标记
   public readonly __v_isRef = true
+  private _rawValue: T
 
   constructor(value: T, public readonly __v_isShallow: boolean) {
     // 如果 __v_isShallow 为 true，则 value 不会被转化为 reactive 数据，即如果当前 value 为复杂数据类型，则会失去响应性。对应官方文档 shallowRef ：https://cn.vuejs.org/api/reactivity-advanced.html#shallowref
     this._value = __v_isShallow ? value : toReactive(value)
+    // 原始数据
+    this._rawValue = value
   }
 
   get value() {
@@ -43,7 +47,16 @@ class RefImpl<T> {
     return this._value
   }
 
-  set value(newVal) {}
+  set value(newVal) {
+    if (hasChanged(newVal, this._rawValue)) {
+      // 更新原始数据
+      this._rawValue = newVal
+      // 更新 .value 的值
+      this._value = toReactive(newVal)
+      // 触发依赖
+      triggerRefValue(this)
+    }
+  }
 }
 
 /**
