@@ -1,4 +1,5 @@
 import { Dep, createDep } from './dep'
+import { ComputedRefImpl } from './computed'
 
 type KeyToDepMap = Map<any, Dep>
 /**
@@ -73,6 +74,10 @@ export function effect<T = any>(fn: () => T) {
 export let activeEffect: ReactiveEffect | undefined
 
 export class ReactiveEffect<T = any> {
+  /**
+   * 存在该属性，则表示当前的 effect 为计算属性的 effect
+   */
+  computed?: ComputedRefImpl<T>
   constructor(public fn: () => T) {}
 
   run() {
