@@ -51,7 +51,14 @@ export function triggerEffects(dep: Dep) {
   const effects = Array.isArray(dep) ? dep : [...dep]
   // 依次触发
   for (const effect of effects) {
-    triggerEffect(effect)
+    if (effect.computed) {
+      triggerEffect(effect)
+    }
+  }
+  for (const effect of effects) {
+    if (!effect.computed) {
+      triggerEffect(effect)
+    }
   }
 }
 
