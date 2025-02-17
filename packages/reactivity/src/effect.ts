@@ -1,5 +1,6 @@
 import { Dep, createDep } from './dep'
 import { ComputedRefImpl } from './computed'
+import { extend } from '@vue/shared'
 
 export type EffectScheduler = (...args: any[]) => any
 
@@ -63,11 +64,16 @@ export function triggerEffects(dep: Dep) {
 }
 
 export function triggerEffect(effect: ReactiveEffect) {
-  if (effect.schduler) {
-    effect.schduler()
+  if (effect.scheduler) {
+    effect.scheduler()
   } else {
     effect.run()
   }
+}
+
+export interface ReactiveEffectOptions {
+  lazy?: boolean
+  scheduler?: EffectScheduler
 }
 
 /**
@@ -75,10 +81,16 @@ export function triggerEffect(effect: ReactiveEffect) {
  * @param fn 执行方法
  * @returns 以 ReactiveEffect 实例为 this 的执行函数
  */
-export function effect<T = any>(fn: () => T) {
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions) {
   // 生成 ReactiveEffect 实例
   const _effect = new ReactiveEffect(fn)
-  _effect.run()
+  // 存在 options，则合并配置对象
+  if (options) {
+    extend(_effect, options)
+  }
+  if (!options || !options.lazy) {
+    _effect.run()
+  }
 }
 
 /**
@@ -93,7 +105,7 @@ export class ReactiveEffect<T = any> {
   computed?: ComputedRefImpl<T>
   constructor(
     public fn: () => T,
-    public schduler: EffectScheduler | null = null
+    public scheduler: EffectScheduler | null = null
   ) {}
 
   run() {
