@@ -23,21 +23,17 @@ export function track(target: object, key: unknown) {
     targetMap.set(target, (depsMap = new Map()))
   }
   let dep = depsMap.get(key)
-
   if (!dep) {
     depsMap.set(key, (dep = createDep()))
   }
-  console.log('depsmap中的dep')
-  console.log(depsMap)
+
   trackEffects(dep)
 }
 
 export function trackEffects(dep: Dep) {
   // activeEffect! ： 断言 activeEffect 不为 null
   dep.add(activeEffect!)
-  console.log('收集依赖')
-  console.log(activeEffect)
-  console.log(dep)
+
   activeEffect!.effectdeps.push(dep)
 }
 
@@ -129,12 +125,7 @@ export class ReactiveEffect<T = any> {
 function cleanup(effect) {
   const { effectdeps } = effect
   if (effectdeps.length) {
-    console.log('当前effect的deps')
-    console.log(effectdeps)
     for (let i = 0; i < effectdeps.length; i++) {
-      console.log('删除依赖')
-      console.log(effect)
-      console.log(effectdeps[i])
       effectdeps[i].delete(effect)
       // 从依赖集合中移除当前 effect
     }

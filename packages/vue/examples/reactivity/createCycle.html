@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Doc</title>
+    <script src="../../dist/vue.js"></script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+  </body>
+
+  <script>
+    const { reactive, effect } = Vue
+    const demo = () => {
+      let dep = new Set() // dep 是一个 Set
+      let activeEffect = { deps: ['123', '456'] } // activeEffect 是一个对象，包含 deps 数组
+
+      dep.add(activeEffect) // dep 引用了 activeEffect
+      activeEffect.deps.push(dep) // activeEffect 引用了 dep
+      console.log(dep)
+    }
+
+    // 此时形成了循环引用链
+    // Set { { deps: [ [Set] ] } }
+    //console.log(activeEffect); // { deps: [ Set { [Circular] } ] }
+
+    effect(() => {
+      //document.querySelector('#app').innerText = obj.ok ? obj.name : 'null'
+      // document.querySelector('#app').innerText = obj.name
+      // console.log('effect触发')
+      demo()
+    })
+  </script>
+</html>
