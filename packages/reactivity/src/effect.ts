@@ -102,6 +102,7 @@ export let activeEffect: ReactiveEffect | undefined
 
 export class ReactiveEffect<T = any> {
   effectdeps: Dep[] = []
+  parent: ReactiveEffect | undefined = undefined
   /**
    * 存在该属性，则表示当前的 effect 为计算属性的 effect
    */
@@ -112,9 +113,23 @@ export class ReactiveEffect<T = any> {
   ) {}
 
   run() {
-    cleanup(this)
-    activeEffect = this
-    return this.fn()
+    let parent: ReactiveEffect | undefined = activeEffect
+
+    while (parent) {
+      if (parent === this) {
+        return
+      }
+      parent = parent.parent
+    }
+    try {
+      this.parent = activeEffect
+      activeEffect = this
+      cleanup(this)
+      return this.fn()
+    } finally {
+      activeEffect = this.parent
+      this.parent = undefined
+    }
   }
   stop() {}
 }

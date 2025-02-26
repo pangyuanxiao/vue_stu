@@ -29,7 +29,7 @@ export class ComputedRefImpl<T> {
     trackRefValue(this)
     if (this._dirty) {
       this._dirty = false
-      this._value = this.effect.run()
+      this._value = this.effect.run()!
     }
 
     return this._value
