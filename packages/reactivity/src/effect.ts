@@ -114,7 +114,7 @@ export class ReactiveEffect<T = any> {
 
   run() {
     let parent: ReactiveEffect | undefined = activeEffect
-
+    //防止出现循环的情况
     while (parent) {
       if (parent === this) {
         return
@@ -127,6 +127,9 @@ export class ReactiveEffect<T = any> {
       cleanup(this)
       return this.fn()
     } finally {
+      // 在 effect3 的 run 方法中，this 始终指向 effect3。
+      // 在 effect2 的 run 方法中，this 始终指向 effect2。
+      // 在 effect1 的 run 方法中，this 始终指向 effect1。
       activeEffect = this.parent
       this.parent = undefined
     }

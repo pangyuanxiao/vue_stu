@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Doc</title>
+    <script src="../../dist/vue.js"></script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+  </body>
+
+  <script>
+    const { reactive, effect } = Vue
+
+    const obj = reactive({
+      ef1: 'ef1',
+      ef2: 'ef2',
+      ef3: 'ef3'
+    })
+
+    let temp1, temp2, temp3
+
+    effect(() => {
+      console.log('effect1触发')
+      effect(() => {
+        console.log('effect2触发')
+        effect(() => {
+          console.log('effect3触发')
+          temp3 = obj.ef3
+        })
+        temp2 = obj.ef2
+      })
+      temp1 = obj.ef1
+    })
+  </script>
+</html>
