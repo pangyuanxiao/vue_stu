@@ -3,7 +3,19 @@ import { isObject } from '@vue/shared'
 
 //用于标记是否为reactive
 export const enum ReactiveFlags {
-  IS_REACTIVE = '__v_isReactive'
+  SKIP = '__v_skip',
+  IS_REACTIVE = '__v_isReactive',
+  IS_READONLY = '__v_isReadonly',
+  IS_SHALLOW = '__v_isShallow',
+  RAW = '__v_raw'
+}
+
+export interface Target {
+  [ReactiveFlags.SKIP]?: boolean
+  [ReactiveFlags.IS_REACTIVE]?: boolean
+  [ReactiveFlags.IS_READONLY]?: boolean
+  [ReactiveFlags.IS_SHALLOW]?: boolean
+  [ReactiveFlags.RAW]?: any
 }
 
 /**
@@ -12,10 +24,6 @@ export const enum ReactiveFlags {
  * val：proxy
  */
 export const reactiveMap = new WeakMap<object, any>()
-
-// export const enum ReactiveFlags {
-//   IS_REACTIVE = '__v_isReactive'
-// }
 
 export function reactive(target: object) {
   return createReactiveObject(target, mutableHandlers, reactiveMap)
@@ -54,4 +62,11 @@ export const toReactive = <T extends unknown>(value: T): T => {
  */
 export function isReactive(value): boolean {
   return !!(value && value[ReactiveFlags.IS_REACTIVE])
+}
+
+export function toRaw<T>(observed: T): T {
+  //如果 `observed` 存在并且有 `ReactiveFlags.RAW` 属性，则递归调用 `toRaw` 继续获取原始值
+  const raw = observed && (observed as Target)[ReactiveFlags.RAW]
+  //如果没有 `ReactiveFlags.RAW` 属性，则返回 `observed` 本身，表示它已经是原始值
+  return raw ? toRaw(raw) : observed
 }

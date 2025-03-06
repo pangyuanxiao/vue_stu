@@ -1,5 +1,6 @@
 import { track, trigger } from './effect'
-
+import { ReactiveFlags, toRaw } from './reactive'
+import { hasChanged } from '@vue/shared'
 const get = createGetter()
 
 /**
@@ -7,6 +8,9 @@ const get = createGetter()
  */
 function createGetter() {
   return function get(target: object, key: string | symbol, receiver: object) {
+    if (key === ReactiveFlags.RAW) {
+      return target
+    }
     // 利用 Reflect 得到返回值
     const res = Reflect.get(target, key, receiver)
     // 收集依赖
@@ -30,10 +34,15 @@ function createSetter() {
     value: unknown,
     receiver: object
   ) {
+    let oldValue = (target as any)[key]
     // 利用 Reflect.set 设置新值
     const result = Reflect.set(target, key, value, receiver)
-    // 触发依赖
-    trigger(target, key)
+    if (target === toRaw(receiver)) {
+      if (hasChanged(value, oldValue)) {
+        // 触发依赖
+        trigger(target, key)
+      }
+    }
     return result
   }
 }
