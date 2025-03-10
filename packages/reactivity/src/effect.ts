@@ -1,8 +1,15 @@
 import { Dep, createDep } from './dep'
 import { ComputedRefImpl } from './computed'
-import { extend } from '@vue/shared'
+import { extend, isIntegerKey, isMap } from '@vue/shared'
+import { TriggerOpTypes, TrackOpTypes } from './operations'
 
 export type EffectScheduler = (...args: any[]) => any
+
+// export const ITERATE_KEY = Symbol(__DEV__ ? 'iterate' : '')
+// export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '')
+// Symbol是创建了一个唯一标识，在basehandle里，必须用这里的Symbol
+export const ITERATE_KEY = Symbol('iterate')
+export const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate')
 
 type KeyToDepMap = Map<any, Dep>
 /**
@@ -14,7 +21,7 @@ type KeyToDepMap = Map<any, Dep>
  */
 const targetMap = new WeakMap<any, KeyToDepMap>()
 
-export function track(target: object, key: unknown) {
+export function track(target: object, type: TrackOpTypes, key: unknown) {
   if (!activeEffect) return
   // 尝试从 targetMap 中，根据 target 获取 map
   let depsMap = targetMap.get(target)
@@ -37,16 +44,55 @@ export function trackEffects(dep: Dep) {
   activeEffect!.effectdeps.push(dep)
 }
 
-export function trigger(target: object, key?: unknown) {
+export function trigger(target: object, key?: unknown, type?: TriggerOpTypes) {
   const depsMap = targetMap.get(target)
   if (!depsMap) {
     return
   }
-  const dep: Dep | undefined = depsMap.get(key)
-  if (!dep) {
-    return
+  // depsMap.forEach((value, key) => {
+  //   console.log(`Key: ${key}, Value: ${value}`)
+  // })
+  let deps: (Dep | undefined)[] = []
+
+  if (key !== void 0) {
+    deps.push(depsMap.get(key))
   }
-  triggerEffects(dep)
+
+  switch (type) {
+    case TriggerOpTypes.ADD:
+      if (!Array.isArray(target)) {
+        // console.log(JSON.stringify(Array.from(depsMap)))
+        // console.log(depsMap.get(Symbol('iterate')))
+        deps.push(depsMap.get(ITERATE_KEY))
+        if (isMap(target)) {
+          deps.push(depsMap.get(MAP_KEY_ITERATE_KEY))
+        }
+      } else if (isIntegerKey(key)) {
+        // new index added to array -> length changes
+        deps.push(depsMap.get('length'))
+      }
+      break
+    case TriggerOpTypes.SET:
+      if (isMap(target)) {
+        deps.push(depsMap.get(ITERATE_KEY))
+      }
+      break
+  }
+
+  if (deps.length === 1) {
+    if (deps[0]) {
+      triggerEffects(deps[0])
+    }
+  } else {
+    const effects: ReactiveEffect[] = []
+    for (const dep of deps) {
+      if (dep) {
+        effects.push(...dep)
+      }
+    }
+
+    triggerEffects(createDep(effects))
+  }
 }
 
 export function triggerEffects(dep: Dep) {

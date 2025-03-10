@@ -1,6 +1,10 @@
-import { track, trigger } from './effect'
+import { track, trigger, ITERATE_KEY } from './effect'
 import { ReactiveFlags, toRaw } from './reactive'
-import { hasChanged } from '@vue/shared'
+import { hasChanged, hasOwn } from '@vue/shared'
+import { TriggerOpTypes, TrackOpTypes } from './operations'
+
+// export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '')
+
 const get = createGetter()
 
 /**
@@ -14,7 +18,8 @@ function createGetter() {
     // 利用 Reflect 得到返回值
     const res = Reflect.get(target, key, receiver)
     // 收集依赖
-    track(target, key)
+    track(target, TrackOpTypes.GET, key)
+
     return res
   }
 }
@@ -35,16 +40,29 @@ function createSetter() {
     receiver: object
   ) {
     let oldValue = (target as any)[key]
+    const hadKey = hasOwn(target, key)
     // 利用 Reflect.set 设置新值
     const result = Reflect.set(target, key, value, receiver)
     if (target === toRaw(receiver)) {
-      if (hasChanged(value, oldValue)) {
+      if (!hadKey) {
+        trigger(target, key, TriggerOpTypes.ADD)
+      } else if (hasChanged(value, oldValue)) {
         // 触发依赖
-        trigger(target, key)
+        trigger(target, key, TriggerOpTypes.SET)
       }
     }
+
     return result
   }
+}
+
+function ownKeys(target: object): (string | symbol)[] {
+  track(
+    target,
+    TrackOpTypes.ITERATE,
+    Array.isArray(target) ? 'length' : ITERATE_KEY
+  )
+  return Reflect.ownKeys(target)
 }
 
 /**
@@ -52,5 +70,6 @@ function createSetter() {
  */
 export const mutableHandlers: ProxyHandler<object> = {
   get,
-  set
+  set,
+  ownKeys
 }
