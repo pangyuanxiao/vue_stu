@@ -1,16 +1,17 @@
 import { track, trigger, ITERATE_KEY } from './effect'
-import { ReactiveFlags, toRaw } from './reactive'
-import { hasChanged, hasOwn } from '@vue/shared'
+import { ReactiveFlags, toRaw, reactive } from './reactive'
+import { isObject, hasChanged, hasOwn } from '@vue/shared'
 import { TriggerOpTypes, TrackOpTypes } from './operations'
 
-// export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '')
+// import { MAP_KEY_ITERATE_KEY } from './effect'
 
-const get = createGetter()
+const get = /*#__PURE__*/ createGetter()
+const shallowGet = /*#__PURE__*/ createGetter(false, true)
 
 /**
  * 创建 getter 回调方法
  */
-function createGetter() {
+function createGetter(isReadonly = false, shallow = false) {
   return function get(target: object, key: string | symbol, receiver: object) {
     if (key === ReactiveFlags.RAW) {
       return target
@@ -19,6 +20,18 @@ function createGetter() {
     const res = Reflect.get(target, key, receiver)
     // 收集依赖
     track(target, TrackOpTypes.GET, key)
+
+    if (shallow) {
+      return res
+    }
+
+    if (isObject(res)) {
+      // Convert returned value into a proxy as well. we do the isObject check
+      // here to avoid invalid value warning. Also need to lazy access readonly
+      // and reactive here to avoid circular dependency.
+      //return isReadonly ? readonly(res) : reactive(res)
+      return reactive(res)
+    }
 
     return res
   }
