@@ -1,6 +1,6 @@
 import { track, trigger, ITERATE_KEY } from './effect'
 import { ReactiveFlags, toRaw, reactive } from './reactive'
-import { isObject, hasChanged, hasOwn } from '@vue/shared'
+import { isObject, hasChanged, hasOwn, isIntegerKey } from '@vue/shared'
 import { TriggerOpTypes, TrackOpTypes } from './operations'
 
 // import { MAP_KEY_ITERATE_KEY } from './effect'
@@ -53,15 +53,18 @@ function createSetter() {
     receiver: object
   ) {
     let oldValue = (target as any)[key]
-    const hadKey = hasOwn(target, key)
+    const hadKey =
+      Array.isArray(target) && isIntegerKey(key)
+        ? Number(key) < target.length
+        : hasOwn(target, key)
     // 利用 Reflect.set 设置新值
     const result = Reflect.set(target, key, value, receiver)
     if (target === toRaw(receiver)) {
       if (!hadKey) {
-        trigger(target, key, TriggerOpTypes.ADD)
+        trigger(target, key, TriggerOpTypes.ADD, value)
       } else if (hasChanged(value, oldValue)) {
         // 触发依赖
-        trigger(target, key, TriggerOpTypes.SET)
+        trigger(target, key, TriggerOpTypes.SET, value)
       }
     }
 

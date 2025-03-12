@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Doc</title>
+    <script src="../../dist/vue.js"></script>
+  </head>
+
+  <body>
+    <div id="app"></div>
+  </body>
+
+  <script>
+    const { reactive, effect, computed } = Vue
+
+    const p = reactive(['zkk', 'zk', 'zk', 'zk'])
+
+    effect(() => {
+      //console.log(p.length)
+      console.log(p[1])
+      console.log(p[2])
+      console.log(p[0])
+    })
+
+    setTimeout(() => {
+      //p[2] = 'zzk'
+      p.length = 0
+    }, 3000)
+  </script>
+</html>

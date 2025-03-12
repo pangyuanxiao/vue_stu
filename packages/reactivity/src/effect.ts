@@ -44,18 +44,31 @@ export function trackEffects(dep: Dep) {
   activeEffect!.effectdeps.push(dep)
 }
 
-export function trigger(target: object, key?: unknown, type?: TriggerOpTypes) {
+export function trigger(
+  target: object,
+  key?: unknown,
+  type?: TriggerOpTypes,
+  newValue?: unknown
+) {
   const depsMap = targetMap.get(target)
   if (!depsMap) {
     return
   }
-  // depsMap.forEach((value, key) => {
-  //   console.log(`Key: ${key}, Value: ${value}`)
-  // })
+  depsMap.forEach((value, key) => {
+    console.log(`Key: ${key}, Value: ${value}`)
+  })
   let deps: (Dep | undefined)[] = []
 
   if (key !== void 0) {
     deps.push(depsMap.get(key))
+  }
+
+  if (key === 'length' && Array.isArray(target)) {
+    depsMap.forEach((dep, key) => {
+      if (key === 'length' || key >= (newValue as number)) {
+        deps.push(dep)
+      }
+    })
   }
 
   switch (type) {
@@ -68,7 +81,7 @@ export function trigger(target: object, key?: unknown, type?: TriggerOpTypes) {
           deps.push(depsMap.get(MAP_KEY_ITERATE_KEY))
         }
       } else if (isIntegerKey(key)) {
-        // new index added to array -> length changes
+        // 当前的index值大于当前数组的长度了
         deps.push(depsMap.get('length'))
       }
       break
