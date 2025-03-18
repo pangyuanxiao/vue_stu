@@ -209,3 +209,21 @@ function cleanup(effect) {
     effectdeps.length = 0 // 清空依赖数组
   }
 }
+
+export let shouldTrack = true
+const trackStack: boolean[] = []
+
+export function pauseTracking() {
+  trackStack.push(shouldTrack)
+  shouldTrack = false
+}
+
+export function enableTracking() {
+  trackStack.push(shouldTrack)
+  shouldTrack = true
+}
+
+export function resetTracking() {
+  const last = trackStack.pop()
+  shouldTrack = last === undefined ? true : last
+}
